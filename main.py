@@ -1,27 +1,22 @@
-
 import os
 from dotenv import load_dotenv
 from agents import Agent, Runner, OpenAIChatCompletionsModel, function_tool, set_tracing_disabled
 from openai import AsyncOpenAI
 import chainlit as cl
-# from whatsapp import send_whatsapp_message # Removed as per your request
+from whatsapp import send_whatsapp_message 
 
 load_dotenv()
 set_tracing_disabled(True)
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# --- Crucial for Gemini compatibility with OpenAI client ---
-# The base_url needs to point to Gemini's OpenAI-compatible endpoint.
-# The model name should also reflect this.
 external_client = AsyncOpenAI(
     api_key=API_KEY,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
 )
 
-# Use the openai_client parameter to pass your configured client
 model = OpenAIChatCompletionsModel(
-    model="gemini-1.5-flash", # Use the actual Gemini model name
+    model="gemini-1.5-flash", 
     openai_client=external_client,
 )
 
@@ -89,24 +84,10 @@ async def handle_message(message: cl.Message):
     history = cl.user_session.get("history") or []
     history.append({"role": "user", "content": message.content})
 
-    # The `input` to Runner.run_sync can be a string or a list of messages.
-    # If it's a list, it should match the expected format for the LLM.
-    # For simplicity with the `openai-agents` and `OpenAIChatCompletionsModel`,
-    # let's try passing the current message content as a string directly,
-    # and manage the history for subsequent turns in Chainlit.
-    # For a full conversation history, you might need to convert `history`
-    # into the specific format expected by `OpenAIChatCompletionsModel`
-    # or ensure the `Agent` can handle a list of dicts.
-    # For now, let's process the *current* user message for the agent.
-    # If you want full chat history for the agent's context, you'd need
-    # to pass it as `messages` parameter if `Runner.run_sync` supports it,
-    # or let the `Agent` manage its internal history if configured.
-    # A common pattern is:
-    # result = await ai_health_buddy.run(message.content, history=history) # if agent supports history
-    # Or, for `Runner.run_sync` which is simpler:
+ 
     result = Runner.run_sync(
         starting_agent=ai_health_buddy,
-        input=message.content # Pass only the current message to the agent
+        input=message.content 
     )
 
     history.append({"role": "assistant", "content": result.final_output})
